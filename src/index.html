@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js canvas - geometry - birds</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				color: #808080;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+
+				background-color: #ffffff;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+			a {
+				text-decoration: underline;
+				cursor: pointer;
+			}
+
+			#info {
+				position: absolute;
+				top: 0px; width: 100%;
+				padding: 5px;
+			}
+		</style>
+	</head>
+	<body>
+
+		<div id="info">Project<br/>
+		</div>
+
+		<div id="container"></div>
+
+		<script src="../build/three.js"></script>
+		<script src="../build/OrbitControls.js"></script>
+		<script src="../build/Projector.js"></script>
+		<script src="../build/CanvasRenderer.js"></script>
+		<script src="../build/stats.min.js"></script>
+
+		<script>
+
+			var SCREEN_WIDTH = window.innerWidth,
+			SCREEN_HEIGHT = window.innerHeight,
+			SCREEN_WIDTH_HALF = SCREEN_WIDTH  / 2,
+			SCREEN_HEIGHT_HALF = SCREEN_HEIGHT / 2;
+
+			var camera, scene, renderer;
+
+			var stats;
+
+			init();
+			animate();
+
+			function init() {
+
+				camera = new THREE.PerspectiveCamera( 75, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 10000 );
+				camera.position.z = 450;
+
+				scene = new THREE.Scene();
+
+				var boxObsGeo = new THREE.BoxGeometry( 100, 100, 100 );
+				var boxObsMat = new THREE.MeshBasicMaterial( {color: 0xdb4dff} );
+				var boxObs = new THREE.Mesh( boxObsGeo, boxObsMat );
+				scene.add(boxObs);
+				boxObs.position.set( 0, 0, 0 );
+
+				renderer = new THREE.CanvasRenderer();
+				renderer.setClearColor( 0x000000 );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+
+				stats = new Stats();
+
+				document.body.appendChild( renderer.domElement );
+				document.getElementById( 'container' ).appendChild(stats.dom);
+				window.addEventListener( 'resize', onWindowResize, false );
+
+				var controls = new THREE.OrbitControls( camera );
+				controls.damping = 1;
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				stats.begin();
+				render();
+				stats.end();
+
+			}
+
+			function render() {
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+</html>
