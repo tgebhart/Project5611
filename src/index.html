@@ -61,6 +61,8 @@
 	<body>
 		<script src="../build/three.js"></script>
 		<script src="../build/PointerLockControls.js"></script>
+		<script src="./Boid.js"></script>
+		<script src="obj/Bird.js"></script>
 
 		<div id="blocker">
 
@@ -77,15 +79,20 @@
 			var camera, scene, renderer;
 			var geometry, material, mesh;
 			var controls;
+			var bird, boid;
+			var birds = [];
+			var boids = [];
+			var numBoids = 100;
+
+			var freedom = true;
 
 			var objects = [];
+			var obstacles = [];
 
 			var raycaster;
 
 			var blocker = document.getElementById( 'blocker' );
 			var instructions = document.getElementById( 'instructions' );
-
-			// http://www.html5rocks.com/en/tutorials/pointerlock/intro/
 
 			var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
 
@@ -165,6 +172,9 @@
 
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
 
+				target = new THREE.Vector3( 0, 0, 0 );
+				avgPos = new THREE.Vector3( 0, 0, 0 );
+
 				scene = new THREE.Scene();
 				scene.fog = new THREE.Fog( 0xffffff, 0, 750 );
 
@@ -174,6 +184,26 @@
 
 				controls = new THREE.PointerLockControls( camera );
 				scene.add( controls.getObject() );
+
+
+				for ( var i = 0; i < numBoids; i ++ ) {
+
+					boid = boids[ i ] = new Boid();
+					boid.position.x = ( Math.random() * 20 - 10 ) * 50;
+					boid.position.y = Math.random() * 100;
+					boid.position.z = ( Math.random() * 20 - 10 ) * 50;
+					boid.velocity.x = Math.random() * 2 - 2;
+					boid.velocity.y = Math.random() * 2 - 2;
+					boid.velocity.z = Math.random() * 2 - 2;
+					boid.setAvoidWalls( true );
+					boid.setWorldSize( 1000, 200, 1000 );
+					boid.setGoal( target, freedom );
+
+					bird = birds[ i ] = new THREE.Mesh( new Bird(), new THREE.MeshBasicMaterial( { color:Math.random() * 0xffffff, side: THREE.DoubleSide } ) );
+					bird.phase = Math.floor( Math.random() * 60 );
+					scene.add( bird );
+
+				}
 
 				var onKeyDown = function ( event ) {
 
@@ -263,10 +293,12 @@
 
 				}
 
-				material = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } );
+				material = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors, wireframe:true } );
 
 				mesh = new THREE.Mesh( geometry, material );
 				scene.add( mesh );
+				mesh.geometry.computeBoundingBox();
+				obstacles.push( mesh );
 
 				// objects
 
@@ -281,7 +313,7 @@
 
 				}
 
-				for ( var i = 0; i < 600; i ++ ) {
+				for ( var i = 0; i < 500; i ++ ) {
 
 					material = new THREE.MeshPhongMaterial( { specular: 0xffffff, shading: THREE.FlatShading, vertexColors: THREE.VertexColors } );
 
@@ -294,6 +326,8 @@
 					material.color.setHSL( Math.random() * 0.2 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
 
 					objects.push( mesh );
+					mesh.geometry.computeBoundingBox();
+					obstacles.push( mesh );
 
 				}
 
@@ -361,6 +395,22 @@
 					}
 
 					prevTime = time;
+
+				}
+
+				for ( var i = 0, il = birds.length; i < il; i++ ) {
+
+					boid = boids[ i ];
+					boid.run( boids, obstacles );
+
+					bird = birds[ i ];
+					bird.position.copy( boids[ i ].position );
+
+					bird.rotation.y = Math.atan2( - boid.velocity.z, boid.velocity.x );
+					bird.rotation.z = Math.asin( boid.velocity.y / boid.velocity.length() );
+
+					bird.phase = ( bird.phase + ( Math.max( 0, bird.rotation.z ) + 0.1 )  ) % 60;
+					bird.geometry.vertices[ 5 ].y = bird.geometry.vertices[ 4 ].y = Math.sin( bird.phase ) * 5;
 
 				}
 
