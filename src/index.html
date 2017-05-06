@@ -90,6 +90,8 @@
 			var numBoids = 100;
 			var numMonsters = 50;
 
+			var lost = false;
+
 			var target = new THREE.Vector3( 0, 0, 0 );
 			var freedom = true;
 
@@ -203,7 +205,7 @@
 					boid.velocity.y = Math.random() * 2 - 2;
 					boid.velocity.z = Math.random() * 2 - 2;
 					boid.setAvoidWalls( true );
-					boid.setWorldSize( 1000, 200, 1000 );
+					boid.setWorldSize( 1000, 100, 1000 );
 					boid.setGoal( target, freedom );
 
 					bird = birds[ i ] = new THREE.Mesh( new Bird(), new THREE.MeshBasicMaterial( { color:Math.random() * 0xffffff, side: THREE.DoubleSide } ) );
@@ -215,9 +217,9 @@
 				for ( var i = 0; i < numMonsters; i ++ ) {
 
 					monster = monsters[ i ] = new Monster();
-					monster.position.x = ( Math.random() * 20 - 10 ) * 50;
+					monster.position.x = ( Math.random() * 2000 - 1000 );
 					monster.position.y = 0;
-					monster.position.z = ( Math.random() * 20 - 10 ) * 50;
+					monster.position.z = ( Math.random() * 2000 - 1000 );
 					monster.velocity.x = Math.random() * 4 - 4;
 					monster.velocity.z = Math.random() * 4 - 4;
 					monster.setAvoidWalls( true );
@@ -320,7 +322,7 @@
 
 				}
 
-				material = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors, wireframe:true } );
+				material = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors, wireframe:false } );
 
 				mesh = new THREE.Mesh( geometry, material );
 				scene.add( mesh );
@@ -379,7 +381,17 @@
 
 			function animate() {
 
-				requestAnimationFrame( animate );
+				if (!lost) {
+					requestAnimationFrame( animate );
+				}
+				else {
+					instructions.addEventListener( 'mousemove', function ( event ) {
+
+						instructions.innerHTML = 'You Lost. Hit "Refresh" to try again.';
+
+					}, false );
+
+				}
 
 				if ( controlsEnabled ) {
 					raycaster.ray.origin.copy( controls.getObject().position );
@@ -453,8 +465,10 @@
 					zombie = zombies[ i ];
 					zombie.position.copy( monsters[ i ].position );
 
+					if ( monster.position.distanceTo(target) < 10) {
+						lost = true;
+					}
 					monster.setGoal( target );
-
 				}
 
 				renderer.render( scene, camera );
