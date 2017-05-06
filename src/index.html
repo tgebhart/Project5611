@@ -62,7 +62,9 @@
 		<script src="../build/three.js"></script>
 		<script src="../build/PointerLockControls.js"></script>
 		<script src="./Boid.js"></script>
+		<script src="./Monster.js"></script>
 		<script src="obj/Bird.js"></script>
+		<script src="obj/Zombie.js"></script>
 
 		<div id="blocker">
 
@@ -80,10 +82,15 @@
 			var geometry, material, mesh;
 			var controls;
 			var bird, boid;
+			var zombie, monster;
+			var monsters = [];
+			var zombies = [];
 			var birds = [];
 			var boids = [];
 			var numBoids = 100;
+			var numMonsters = 50;
 
+			var target = new THREE.Vector3( 0, 0, 0 );
 			var freedom = true;
 
 			var objects = [];
@@ -204,6 +211,26 @@
 					scene.add( bird );
 
 				}
+
+				for ( var i = 0; i < numMonsters; i ++ ) {
+
+					monster = monsters[ i ] = new Monster();
+					monster.position.x = ( Math.random() * 20 - 10 ) * 50;
+					monster.position.y = 0;
+					monster.position.z = ( Math.random() * 20 - 10 ) * 50;
+					monster.velocity.x = Math.random() * 4 - 4;
+					monster.velocity.z = Math.random() * 4 - 4;
+					monster.setAvoidWalls( true );
+					monster.setWorldSize( 1000, 0, 1000 );
+					monster.setGoal( target );
+
+					zombie = zombies[ i ] = new THREE.Mesh( new Zombie(), new THREE.MeshBasicMaterial( { color: 0x000000, side: THREE.DoubleSide } ) );
+					zombie.phase = Math.floor( Math.random() * 60 );
+					scene.add( zombie );
+
+				}
+
+
 
 				var onKeyDown = function ( event ) {
 
@@ -385,6 +412,10 @@
 					controls.getObject().translateY( velocity.y * delta );
 					controls.getObject().translateZ( velocity.z * delta );
 
+					target.x = controls.getObject().position.x;
+					target.y = controls.getObject().position.y;
+					target.z = controls.getObject().position.z;
+
 					if ( controls.getObject().position.y < 10 ) {
 
 						velocity.y = 0;
@@ -411,6 +442,18 @@
 
 					bird.phase = ( bird.phase + ( Math.max( 0, bird.rotation.z ) + 0.1 )  ) % 60;
 					bird.geometry.vertices[ 5 ].y = bird.geometry.vertices[ 4 ].y = Math.sin( bird.phase ) * 5;
+
+				}
+
+				for ( var i = 0, il = monsters.length; i < il; i++ ) {
+
+				 	monster = monsters[ i ];
+					monster.run( monsters, obstacles );
+
+					zombie = zombies[ i ];
+					zombie.position.copy( monsters[ i ].position );
+
+					monster.setGoal( target );
 
 				}
 

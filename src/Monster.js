@@ -1,28 +1,24 @@
-var Boid = function() {
+var Monster = function() {
 
     var vector = new THREE.Vector3();
     var acceleration;
     var width = 1000;
-    var height = 1000;
     var depth = 1000;
+    var height = 0;
     var goal;
     var neighborhoodRadius = 200;
-    var maxSpeed = 2.5;
-    var maxSteerForce = .01;
+    var maxSpeed = .5;
+    var maxSteerForce = .1;
     var avoidWalls = false;
 
     this.position = new THREE.Vector3();
     this.velocity = new THREE.Vector3();
     acceleration = new THREE.Vector3();
 
-    this.setGoal = function(target, freedom) {
+    this.setGoal = function(target) {
 
-      if (freedom) {
-        goal = null;
-      }
-      else {
-        goal = target;
-      }
+      goal = target;
+
     };
 
     this.setAvoidWalls = function(value) {
@@ -175,6 +171,7 @@ var Boid = function() {
 
         steer.subVectors(target, this.position);
         steer.multiplyScalar(amount);
+        steer.y = 0;
 
         return steer;
 
@@ -221,6 +218,7 @@ var Boid = function() {
 
             steer.subVectors(this.position, target);
             steer.multiplyScalar(0.5 / distance);
+            steer.y = 0;
 
             acceleration.add(steer);
 
@@ -243,15 +241,15 @@ var Boid = function() {
             vector.multiplyScalar(5);
             acceleration.add(vector);
 
-            vector.set(this.position.x, 0, this.position.z);
-            vector = this.avoid(vector);
-            vector.multiplyScalar(5);
-            acceleration.add(vector);
-
-            vector.set(this.position.x, height, this.position.z);
-            vector = this.avoid(vector);
-            vector.multiplyScalar(5);
-            acceleration.add(vector);
+            // vector.set(this.position.x, 0, this.position.z);
+            // vector = this.avoid(vector);
+            // vector.multiplyScalar(5);
+            // acceleration.add(vector);
+            //
+            // vector.set(this.position.x, height, this.position.z);
+            // vector = this.avoid(vector);
+            // vector.multiplyScalar(5);
+            // acceleration.add(vector);
 
             vector.set(this.position.x, this.position.y, -depth);
             vector = this.avoid(vector);
@@ -270,8 +268,8 @@ var Boid = function() {
               for (i = 0; i < obs.length; i++) {
                 ob = obs[i];
                 ob.geometry.computeBoundingBox();
-                this.repulse(sumA.addVectors(ob.geometry.boundingBox.min,ob.position).add(new THREE.Vector3(30, 30, 30)));
-                this.repulse(sumB.addVectors(ob.geometry.boundingBox.max, ob.position).add(new THREE.Vector3(-30, -30, -30)));
+                this.repulse(sumA.addVectors(ob.geometry.boundingBox.min,ob.position).add(new THREE.Vector3(30, 0, 30)));
+                this.repulse(sumB.addVectors(ob.geometry.boundingBox.max, ob.position).add(new THREE.Vector3(-30, 0, -30)));
               }
 
             }
