@@ -493,6 +493,8 @@
 
 				}
 
+    				let look = new THREE.Vector3( target.x, 0, target.z );
+
                     for (var i = 0, il = monsters.length; i < il; i++) {
 
                         monster = monsters[i];
@@ -502,6 +504,7 @@
                         if(zombie) {
                             zombie.position.copy(monsters[i].position);
 
+                            zombie.lookAt(look);
                             if (monster.position.distanceTo(target) < 10) {
                                 lost = true;
                             }
