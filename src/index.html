@@ -87,13 +87,21 @@
 			var zombies = [];
 			var birds = [];
 			var boids = [];
-			var numBoids = 100;
-			var numMonsters = 50;
+			var numBoids = 50;
+			var numMonsters = 5;
 
 			var lost = false;
 
 			var target = new THREE.Vector3( 0, 0, 0 );
 			var freedom = true;
+
+            var loader = new THREE.JSONLoader();
+            var actions = [];
+            var mixers = [];
+
+            var clock;
+
+            var isLoaded = false;
 
 			var objects = [];
 			var obstacles = [];
@@ -178,6 +186,7 @@
 			var velocity = new THREE.Vector3();
 
 			function init() {
+                clock = new THREE.Clock();
 
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
 
@@ -216,7 +225,7 @@
 
 				for ( var i = 0; i < numMonsters; i ++ ) {
 
-					monster = monsters[ i ] = new Monster();
+					monster = new Monster();
 					monster.position.x = ( Math.random() * 2000 - 1000 );
 					monster.position.y = 0;
 					monster.position.z = ( Math.random() * 2000 - 1000 );
@@ -225,10 +234,36 @@
 					monster.setAvoidWalls( true );
 					monster.setWorldSize( 1000, 0, 1000 );
 					monster.setGoal( target );
+					monsters.push(monster);
+//					zombie = zombies[ i ] = new THREE.Mesh( new Zombie(), new THREE.MeshBasicMaterial( { color: 0x000000, side: THREE.DoubleSide } ) );
+					let zombie;
 
-					zombie = zombies[ i ] = new THREE.Mesh( new Zombie(), new THREE.MeshBasicMaterial( { color: 0x000000, side: THREE.DoubleSide } ) );
-					zombie.phase = Math.floor( Math.random() * 60 );
-					scene.add( zombie );
+                    loader.load('../models/zombie.json', (geometry, materials) => {
+                        materials.forEach(function (material) {
+                            material.skinning = true;
+                        });
+                        zombie = new THREE.SkinnedMesh(
+                            geometry,
+                            new THREE.MeshFaceMaterial(materials)
+                        );
+
+
+                        let mix = new THREE.AnimationMixer(zombie);
+                        mixers.push(mix);
+
+                        actions.push(mix.clipAction(geometry.animations[ 4 ]));
+
+                        zombie.scale.set(7, 7, 7);
+
+                        zombie.position.y = 0;
+
+                        animate();
+
+                        zombie.phase = Math.floor( Math.random() * 60 );
+                        zombies.push(zombie);
+                        scene.add(zombie)
+
+                    });
 
 				}
 
@@ -367,8 +402,9 @@
 				document.body.appendChild( renderer.domElement );
 
 				window.addEventListener( 'resize', onWindowResize, false );
+                isLoaded = true;
 
-			}
+            }
 
 			function onWindowResize() {
 
@@ -380,7 +416,7 @@
 			}
 
 			function animate() {
-
+                if (isLoaded) {
 				if (!lost) {
 					requestAnimationFrame( animate );
 				}
@@ -457,21 +493,27 @@
 
 				}
 
-				for ( var i = 0, il = monsters.length; i < il; i++ ) {
+                    for (var i = 0, il = monsters.length; i < il; i++) {
 
-				 	monster = monsters[ i ];
-					monster.run( monsters, obstacles );
+                        monster = monsters[i];
+                        monster.run(monsters, obstacles);
 
-					zombie = zombies[ i ];
-					zombie.position.copy( monsters[ i ].position );
+                        zombie = zombies[i];
+                        if(zombie) {
+                            zombie.position.copy(monsters[i].position);
 
-					if ( monster.position.distanceTo(target) < 10) {
-						lost = true;
-					}
-					monster.setGoal( target );
-				}
+                            if (monster.position.distanceTo(target) < 10) {
+                                lost = true;
+                            }
+                            monster.setGoal(target);
+						}
+                    }
 
-				renderer.render( scene, camera );
+                    actions.forEach(act => act.play());
+                    let cdelta = clock.getDelta();
+                    mixers.forEach(mix => mix.update(cdelta));
+                    renderer.render(scene, camera);
+                }
 
 			}
 
