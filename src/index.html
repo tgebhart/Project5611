@@ -56,6 +56,11 @@
 
 			}
 
+			#hud {
+				position: absolute;
+				z-index:5;
+			}
+
 		</style>
 	</head>
 	<body>
@@ -76,6 +81,11 @@
 
 		</div>
 
+		<div id="hud" style="display: none">
+			<p style="font-size: 24px; color: cornflowerblue">Birds Caught: </p>
+			<p style="font-size: 24px; color: cornflowerblue">Fuel: </p>
+		</div>
+
 		<script>
 
 			var camera, scene, renderer;
@@ -87,8 +97,12 @@
 			var zombies = [];
 			var birds = [];
 			var boids = [];
-			var numBoids = 50;
-			var numMonsters = 5;
+			var numBoids = 30;
+			var numMonsters = 8;
+			var displayHud = true;
+
+			var fly = false;
+			var fuel = 0;
 
 			var lost = false;
 
@@ -293,7 +307,12 @@
 							break;
 
 						case 32: // space
-							if ( canJump === true ) velocity.y += 350;
+							if ( canJump === true ) {
+						    	velocity.y += 350;
+                            } else if (fuel > 0) {
+						    	fly = true;
+							}
+
 							canJump = false;
 							break;
 
@@ -324,6 +343,10 @@
 						case 68: // d
 							moveRight = false;
 							break;
+
+                        case 32: // space
+							fly = false;
+                        	break;
 
 					}
 
@@ -443,7 +466,13 @@
 					velocity.x -= velocity.x * 10.0 * delta;
 					velocity.z -= velocity.z * 10.0 * delta;
 
-					velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
+					if (fly) {
+					    velocity.y = 50;
+					    fuel -= 0.1;
+					} else {
+                        velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
+                    }
+
 
 					if ( moveForward ) velocity.z -= 400.0 * delta;
 					if ( moveBackward ) velocity.z += 400.0 * delta;
