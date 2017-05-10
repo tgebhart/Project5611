@@ -57,20 +57,31 @@
 		}
 	</style>
 </head>
+			#hud {
+				position: absolute;
+				z-index:5;
+			}
 
-<body>
-	<script src="../build/three.js"></script>
-	<script src="../build/PointerLockControls.js"></script>
-	<script src="./Boid.js"></script>
-	<script src="./Monster.js"></script>
-	<script src="obj/Bird.js"></script>
-	<script src="obj/Zombie.js"></script>
+		</style>
+	</head>
+	<body>
+		<script src="../build/three.js"></script>
+		<script src="../build/PointerLockControls.js"></script>
+		<script src="./Boid.js"></script>
+		<script src="./Monster.js"></script>
+		<script src="obj/Bird.js"></script>
+		<script src="obj/Zombie.js"></script>
 
 	<div id="blocker">
 
 		<div id="instructions">
 			<span style="font-size:40px">Click to play</span>
 			<br /> (ARROW keys to move, SPACE to Jump, MOUSE to look around)
+		</div>
+
+		<div id="hud" style="display: none">
+			<p style="font-size: 24px; color: cornflowerblue">Birds Caught: </p>
+			<p style="font-size: 24px; color: cornflowerblue">Fuel: </p>
 		</div>
 
 	</div>
@@ -95,7 +106,10 @@
 		var xstart = 0;
 		var ystart = -100;
 		var zstart = 0;
+		var displayHud = true;
 
+		var fly = false;
+		var fuel = 0;
 		var lost = false;
 
 		var generation = 0;
@@ -278,6 +292,18 @@
 				});
 
 			}
+						case 32: // space
+							if ( canJump === true ) {
+						    	velocity.y += 350;
+                            } else if (fuel > 0) {
+						    	fly = true;
+							}
+
+							canJump = false;
+							break;
+
+					}
+
 
 			var onKeyDown = function(event) {
 
@@ -309,6 +335,12 @@
 						break;
 
 				}
+
+                        case 32: // space
+							fly = false;
+                        	break;
+
+					}
 
 			};
 
@@ -584,7 +616,13 @@
 					velocity.x -= velocity.x * 10.0 * delta;
 					velocity.z -= velocity.z * 10.0 * delta;
 
-					velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
+					if (fly) {
+					    velocity.y = 50;
+					    fuel -= 0.1;
+					} else {
+                        velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
+                    }
+
 
 					if (moveForward) velocity.z -= 400.0 * delta;
 					if (moveBackward) velocity.z += 400.0 * delta;
@@ -647,6 +685,10 @@
 				}
 
 				move();
+    				let look = new THREE.Vector3( target.x, 0, target.z );
+
+                    for (var i = 0, il = monsters.length; i < il; i++) {
+
 
 				for (var i = 0, il = monsters.length; i < il; i++) {
 
@@ -656,6 +698,13 @@
 					zombie = zombies[i];
 					if (zombie) {
 						zombie.position.copy(monsters[i].position);
+                            zombie.lookAt(look);
+                            if (monster.position.distanceTo(target) < 10) {
+                                lost = true;
+                            }
+                            monster.setGoal(target);
+						}
+                    }
 
 						if (monster.position.distanceTo(target) < 10) {
 							lost = true;
