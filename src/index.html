@@ -125,9 +125,9 @@
 		var birds = [];
 		var boids = [];
 		var systems = [];
-		var numBoids = 50;
+		var numBoids = 10;
 		var birdsLeft = numBoids;
-		var numMonsters = 5;
+		var numMonsters = 10;
 		const MAX_PARTICLES = 10000;
 		const MAX_LIFE = 20;
 		const PER_SYSTEM = 1000;
@@ -136,6 +136,7 @@
 		var ystart = -100;
 		var zstart = 0;
 
+		var sprint = false;
 		var fly = false;
 		var fuel = 100;
 		var lost = false;
@@ -356,6 +357,10 @@
 					canJump = false;
 					break;
 
+                case 16:
+                    sprint = true;
+                    break;
+
 			}
 
 		};
@@ -387,6 +392,10 @@
 				case 32: // space
 					fly = false;
 					break;
+
+                case 16:
+                    sprint = false;
+                    break;
 
 			}
 
@@ -644,7 +653,13 @@
 					}
 
 
-					if (moveForward) velocity.z -= 400.0 * delta;
+					if (moveForward) {
+					    if(sprint) {
+                            velocity.z -= 1000.0 * delta;
+                        } else {
+                            velocity.z -= 400.0 * delta;
+                        }
+					}
 					if (moveBackward) velocity.z += 400.0 * delta;
 
 					if (moveLeft) velocity.x -= 400.0 * delta;
