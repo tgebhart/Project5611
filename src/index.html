@@ -720,6 +720,7 @@
 						zombie = zombies[i];
 						if (zombie) {
 							zombie.position.copy(monsters[i].position);
+							zombie.position.y += 1.1;
 							zombie.lookAt(look);
 							if (monster.position.distanceTo(target) < 10) {
 								lost = true;
