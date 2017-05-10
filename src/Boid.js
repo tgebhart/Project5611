@@ -7,8 +7,8 @@ var Boid = function() {
     var depth = 1000;
     var goal;
     var neighborhoodRadius = 200;
-    var maxSpeed = 2.5;
-    var maxSteerForce = .01;
+    var maxSpeed = 1;
+    var maxSteerForce = .001;
     var avoidWalls = false;
 
     this.position = new THREE.Vector3();
