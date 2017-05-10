@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 	<title>Project 5611</title>
 	<meta charset="utf-8">
@@ -55,11 +54,41 @@
 
 			cursor: pointer;
 		}
+
+		#hud {
+			position: absolute;
+			z-index:5;
+            font-size: 24px;
+            color: cornflowerblue;
+		}
+
+        #birds{
+            width: 100px;
+            height:40px;
+            white-space: nowrap;
+        }
+
+        #jet{
+            width: 100px;
+            height:40px;
+            white-space: nowrap;
+        }
+
+        #numBirds{
+            width:50px;
+            height:20px;
+            display: inline-block;
+        }
+
+        #fuel{
+            width:50px;
+            height:20px;
+            display: inline-block;
+        }
+
 	</style>
 </head>
-#hud { position: absolute; z-index:5; }
 
-</style>
 </head>
 
 <body>
@@ -77,12 +106,13 @@
 			<br /> (ARROW keys to move, SPACE to Jump, MOUSE to look around)
 		</div>
 
-		<div id="hud" style="display: none">
-			<p style="font-size: 24px; color: cornflowerblue">Birds Caught: </p>
-			<p style="font-size: 24px; color: cornflowerblue">Fuel: </p>
-		</div>
-
 	</div>
+
+    <div id="hud">
+        <div id="birds">Birds Left: <div id="numBirds"></div></div>
+        <div id="jet">Jetpack Fuel: <div id="fuel"></div></div>
+    </div>
+
 
 	<script>
 		var camera, scene, renderer;
@@ -96,6 +126,7 @@
 		var boids = [];
 		var systems = [];
 		var numBoids = 50;
+		var birdsLeft = numBoids;
 		var numMonsters = 5;
 		const MAX_PARTICLES = 10000;
 		const MAX_LIFE = 20;
@@ -104,10 +135,9 @@
 		var xstart = 0;
 		var ystart = -100;
 		var zstart = 0;
-		var displayHud = true;
 
 		var fly = false;
-		var fuel = 0;
+		var fuel = 100;
 		var lost = false;
 
 		var generation = 0;
@@ -319,8 +349,8 @@
 				case 32: // space
 					if ( canJump === true ) {
 				    	velocity.y += 350;
-	        } else if (fuel > 0) {
-							    	fly = true;
+	                } else if (fuel > 0) {
+				        fly = true;
 					}
 
 					canJump = false;
@@ -606,7 +636,7 @@
 					velocity.x -= velocity.x * 10.0 * delta;
 					velocity.z -= velocity.z * 10.0 * delta;
 
-					if (fly) {
+					if (fly && fuel > 0) {
 						velocity.y = 50;
 						fuel -= 0.1;
 					} else {
@@ -651,7 +681,11 @@
 
 				}
 
-				for (var i = 0, il = birds.length; i < il; i++) {
+                document.getElementById('numBirds').innerHTML = birdsLeft;
+				let fuelDisplay = Math.round(fuel);
+                document.getElementById('fuel').innerHTML = (fuelDisplay > 0 ? fuelDisplay : 0) + '%';
+
+                for (var i = 0, il = birds.length; i < il; i++) {
 
 					boid = boids[i];
 					boid.run(boids, obstacles);
@@ -664,6 +698,7 @@
 						birds.splice(i, 1);
 						boids.splice(i, 1);
 						il--;
+						birdsLeft--;
 					}
 
 					bird.rotation.y = Math.atan2(-boid.velocity.z, boid.velocity.x);
