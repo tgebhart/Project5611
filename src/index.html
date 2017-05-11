@@ -348,7 +348,7 @@
 						sound.setVolume(0.75);
 						sound.onEnded = function() {
 							var rand = ((Math.random() * 5) + 2) * 1000;
-							setTimeout(function(){ 
+							sound.timeout = setTimeout(function(){ 
 										sound.stop();
 										sound.play(); 
 									 }, rand);
@@ -696,16 +696,6 @@
 		function animate() {
 			dt = clock.getDelta();
 			if (isLoaded) {
-				if (!lost) {
-					requestAnimationFrame(animate);
-				} else {
-					sounds.forEach(sound => function() {sound.onEnded = function(){}; sound.stop(); }());
-					instructions.addEventListener('mousemove', function(event) {
-
-						instructions.innerHTML = 'You Lost. Hit "Refresh" to try again.';
-
-					}, false);
-				}
 
 				if (controlsEnabled) {
 					raycaster.ray.origin.copy(controls.getObject().position);
@@ -817,8 +807,8 @@
 							zombie.lookAt(look);
 							monster.setGoal(target);
 						}
-
-					if (monster.position.distanceTo(target) < 10) {
+						
+					if (monster.position.distanceTo(look) < 10) {
 						lost = true;
 					}
 					monster.setGoal(target);
@@ -842,6 +832,16 @@
 			let cdelta = clock.getDelta();
 			mixers.forEach(mix => mix.update(cdelta));
 			renderer.render(scene, camera);
+		}
+		if (!lost) {
+			requestAnimationFrame(animate);
+		} else {
+			sounds.forEach(thisSound => function() {clearTimeout(thisSound.timeout); thisSound.onEnded = function(){}; if(thisSound.isPlaying) {thisSound.stop();} }());
+			instructions.innerHTML = 'You Lost. Click to try again.';
+			instructions.addEventListener('click', function(event) {
+				location.reload();
+			}, false);
+			document.exitPointerLock();
 		}
 		}
 	</script>
