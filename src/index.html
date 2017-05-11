@@ -321,20 +321,20 @@
 				scene.add(bird);
 
 			}
-							
-			audioLoader.load( '../audio/bird.mp3', function( buffer ) {
-				birds.forEach(tempBird => function(){
-					var sound = new THREE.PositionalAudio( listener );
-					sound.setBuffer( buffer );
-					sound.setRefDistance( 20 );
-					sound.setLoop(true);
-					sound.setVolume(2);
-					setTimeout(function(){sound.play();}, Math.random() * numBoids * 1000);
-					tempBird.add( sound );
-					tempBird.sound = sound;
-					sounds.push(sound);
-				}());
-			});
+					
+			birds.forEach(tempBird => function(){		
+				audioLoader.load( '../audio/bird.mp3', function( buffer ) {
+						var sound = new THREE.PositionalAudio( listener );
+						sound.setBuffer( buffer );
+						sound.setRefDistance( 20 );
+						sound.setLoop(true);
+						sound.setVolume(2);
+						setTimeout(function(){sound.play();}, Math.random() * numBoids * 1000);
+						tempBird.add( sound );
+						tempBird.sound = sound;
+						sounds.push(sound);
+					});
+			}());
 
 			for (var i = 0; i < numMonsters; i++) {
 
