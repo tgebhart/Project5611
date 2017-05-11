@@ -142,6 +142,9 @@
 		var fuel = 100;
 		var lost = false;
 
+		var numFuelPickups = 4;
+		var fuelPickups = [];
+
 		var generation = 0;
 
 		var target = new THREE.Vector3(0, 0, 0);
@@ -241,7 +244,6 @@
 		var prevTime = performance.now();
 		var velocity = new THREE.Vector3();
 
-		
 		function init() {
 			clock = new THREE.Clock();
 
@@ -263,7 +265,7 @@
 			scene.add(controls.getObject());
 
 			initialize(numBoids * PER_SYSTEM);
-										
+
 			for (var i = 0; i < numBoids; i++) {
 
 				boid = boids[i] = new Boid();
@@ -276,14 +278,13 @@
 				boid.setAvoidWalls(true);
 				boid.setWorldSize(1000, 100, 1000);
 				boid.setGoal(target, freedom);
-				
-				bird = new THREE.Mesh(new Bird(), new THREE.MeshBasicMaterial({
+
+				bird = birds[i] = new THREE.Mesh(new Bird(), new THREE.MeshBasicMaterial({
 					color: Math.random() * 0xffffff,
 					side: THREE.DoubleSide
 				}));
 				bird.phase = Math.floor(Math.random() * 60);
-								
-				birds.push(bird);					
+				bird.is_ob = true;
 				scene.add(bird);
 
 			}
@@ -438,15 +439,6 @@
                     sprint = false;
                     break;
 
-				case 27: //escape
-				console.log("Escape pressed!");
-					if(clock.running){
-						clock.stop();
-					} else {
-						clock.start();
-					}
-					break;
-
 			}
 
 		};
@@ -524,6 +516,10 @@
 
 		}
 
+		for (let i = 0; i < numFuelPickups; i++) {
+		    fuelPickups.push(placeFuel());
+		}
+
 		renderer = new THREE.WebGLRenderer();
 		renderer.setClearColor(0xffffff);
 		renderer.setPixelRatio(window.devicePixelRatio);
@@ -542,6 +538,34 @@
 
 			renderer.setSize(window.innerWidth, window.innerHeight);
 
+		}
+
+		function placeFuel() {
+            let cube = new THREE.Mesh(new THREE.CubeGeometry(10, 10, 10), new THREE.MeshNormalMaterial());
+			let point = getPoint();
+			cube.position.x = point.x;
+			cube.position.y = point.y;
+			cube.position.z = point.z;
+            scene.add(cube);
+            return cube;
+		}
+
+		function getPoint() {
+            let placement = new THREE.Vector3(
+                Math.floor(Math.random() * 20 - 10) * 50,
+                Math.floor(Math.random() * 20) * 5,
+                Math.floor(Math.random() * 20 - 10) * 50
+            );
+
+            while (!isPointValid(placement)) {
+                placement = new THREE.Vector3(
+                    Math.floor(Math.random() * 20 - 10) * 50,
+                    Math.floor(Math.random() * 20) * 5,
+                    Math.floor(Math.random() * 20 - 10) * 50
+                )
+			}
+
+			return placement;
 		}
 
 		function isPointValid(p) {
@@ -758,21 +782,21 @@
 					bird = birds[i];
 					bird.position.copy(boids[i].position);
 
-					if (bird.position.distanceTo(target) < 20) {
-						light(bird.position.x, bird.position.y, bird.position.z);
-						bird.visible = false; // hide birds after finding them
-						birds.splice(i, 1);
-						boids.splice(i, 1);
-						il--;
-						birdsLeft--;
-					}
-
 					bird.rotation.y = Math.atan2(-boid.velocity.z, boid.velocity.x);
 					bird.rotation.z = Math.asin(boid.velocity.y / boid.velocity.length());
 
 					bird.phase = (bird.phase + (Math.max(0, bird.rotation.z) + 0.1)) % 60;
 					bird.geometry.vertices[5].y = bird.geometry.vertices[4].y = Math.sin(bird.phase) * 5;
 
+                    if (bird.position.distanceTo(target) < 20) {
+                        light(bird.position.x, bird.position.y, bird.position.z);
+                        bird.visible = false; // hide birds after finding them
+						birds.splice(i, 1);
+                        boids.splice(i, 1);
+                        il--;
+                        birdsLeft--;
+                        scene.remove(bird)
+                    }
 				}
 
 				move();
@@ -788,9 +812,6 @@
 							zombie.position.copy(monsters[i].position);
 							zombie.position.y += 1.1;
 							zombie.lookAt(look);
-							if (monster.position.distanceTo(target) < 10) {
-								lost = true;
-							}
 							monster.setGoal(target);
 						}
 
@@ -799,6 +820,20 @@
 					}
 					monster.setGoal(target);
 				}
+
+				fuelPickups.forEach(pickup =>{
+				    if (pickup.position.distanceTo(target) < 15) {
+				       fuel = 100;
+				       let pos = getPoint();
+				       pickup.position.x = pos.x;
+				       pickup.position.y = pos.y;
+				       pickup.position.z = pos.z;
+					}
+
+                    pickup.rotation.x -= 0.02;
+                    pickup.rotation.y -= 0.01;
+                    pickup.rotation.z -= 0.03;
+				});
 
 			actions.forEach(act => act.play());
 			let cdelta = clock.getDelta();
