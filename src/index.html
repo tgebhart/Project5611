@@ -103,7 +103,7 @@
 
 		<div id="instructions">
 			<span style="font-size:40px">Click to play</span>
-			<br /> (ARROW keys to move, SPACE to Jump, MOUSE to look around)
+			<br /> (ARROW keys to move, LEFT SHIFT to run, SPACE to Jump, MOUSE to look around)
 		</div>
 
 	</div>
@@ -790,7 +790,6 @@
 
                     if (bird.position.distanceTo(target) < 20) {
                         light(bird.position.x, bird.position.y, bird.position.z);
-                        bird.visible = false; // hide birds after finding them
 						birds.splice(i, 1);
                         boids.splice(i, 1);
                         il--;
