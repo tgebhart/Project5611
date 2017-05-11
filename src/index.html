@@ -154,6 +154,10 @@
 		var audioLoader = new THREE.AudioLoader();
 		
 		var sounds = [];
+		var wilhelmScream;
+		var fireworkAudio;
+		var ambientMusic;
+		var fuelAudio;
 		
 		var actions = [];
 		var mixers = [];
@@ -251,6 +255,35 @@
 			camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
 			camera.add( listener );
 
+			ambientMusic = new THREE.Audio(listener);
+            audioLoader.load('../audio/ambient_music.ogg', function( buffer ) {
+                ambientMusic.setBuffer( buffer );
+                ambientMusic.setLoop(true);
+                ambientMusic.setVolume(0.15);
+                ambientMusic.play();
+            });
+
+			wilhelmScream = new THREE.Audio(listener);
+			audioLoader.load('../audio/Wilhelm_Scream.ogg', function( buffer ) {
+                wilhelmScream.setBuffer( buffer );
+                wilhelmScream.setVolume(1);
+            });
+
+			fireworkAudio = new THREE.Audio(listener);
+			audioLoader.load('../audio/Depth Charge Short.mp3', function( buffer ) {
+                fireworkAudio.setBuffer( buffer );
+                fireworkAudio.setVolume(0.75);
+            });
+
+            fuelAudio = new THREE.Audio(listener);
+            audioLoader.load('../audio/Laser Blasts.mp3', function( buffer ) {
+                fuelAudio.setBuffer( buffer );
+                fuelAudio.setVolume(0.5);
+            });
+
+			sounds.push(fireworkAudio);
+			sounds.push(fuelAudio);
+
 			target = new THREE.Vector3(0, 0, 0);
 			avgPos = new THREE.Vector3(0, 0, 0);
 
@@ -337,9 +370,6 @@
 
 					zombie.position.y = 0;
 
-					animate();
-				
-				
 					var sound = new THREE.PositionalAudio( listener );
 					
 					audioLoader.load( '../audio/zombie-moan.wav', function( buffer ) {
@@ -786,8 +816,8 @@
                         boids.splice(i, 1);
                         il--;
                         birdsLeft--;
-						
 						bird.sound.stop();
+						fireworkAudio.play();
                         scene.remove(bird)
                     }
 				}
@@ -821,6 +851,7 @@
 				       pickup.position.x = pos.x;
 				       pickup.position.y = pos.y;
 				       pickup.position.z = pos.z;
+				       fuelAudio.play();
 					}
 
                     pickup.rotation.x -= 0.02;
@@ -837,6 +868,7 @@
 			requestAnimationFrame(animate);
 		} else {
 			sounds.forEach(thisSound => function() {clearTimeout(thisSound.timeout); thisSound.onEnded = function(){}; if(thisSound.isPlaying) {thisSound.stop();} }());
+			wilhelmScream.play();
 			instructions.innerHTML = 'You Lost. Click to try again.';
 			instructions.addEventListener('click', function(event) {
 				location.reload();
