@@ -158,6 +158,7 @@
 		var fireworkAudio;
 		var ambientMusic;
 		var fuelAudio;
+		var victoryAudio;
 		
 		var actions = [];
 		var mixers = [];
@@ -281,6 +282,13 @@
                 fuelAudio.setVolume(0.5);
             });
 
+
+			victoryAudio = new THREE.Audio(listener);
+			audioLoader.load('../audio/victory.mp3', function( buffer ) {
+                victoryAudio.setBuffer( buffer );
+                victoryAudio.setVolume(0.75);
+            });
+			
 			sounds.push(fireworkAudio);
 			sounds.push(fuelAudio);
 
@@ -866,16 +874,25 @@
 			mixers.forEach(mix => mix.update(cdelta));
 			renderer.render(scene, camera);
 		}
-		if (!lost) {
-			requestAnimationFrame(animate);
+		if(birdsLeft <= 0){
+		   victoryAudio.play();
+			instructions.innerHTML = 'Victory! Click to play again.';
+				instructions.addEventListener('click', function(event) {
+					location.reload();
+				}, false);
+				document.exitPointerLock();
 		} else {
-			sounds.forEach(thisSound => function() {clearTimeout(thisSound.timeout); thisSound.onEnded = function(){}; if(thisSound.isPlaying) {thisSound.stop();} }());
-			wilhelmScream.play();
-			instructions.innerHTML = 'You Lost. Click to try again.';
-			instructions.addEventListener('click', function(event) {
-				location.reload();
-			}, false);
-			document.exitPointerLock();
+			if (!lost) {
+				requestAnimationFrame(animate);
+			} else {
+				sounds.forEach(thisSound => function() {clearTimeout(thisSound.timeout); thisSound.onEnded = function(){}; if(thisSound.isPlaying) {thisSound.stop();} }());
+				wilhelmScream.play();
+				instructions.innerHTML = 'You Lost. Click to try again.';
+				instructions.addEventListener('click', function(event) {
+					location.reload();
+				}, false);
+				document.exitPointerLock();
+			}
 		}
 		}
 	</script>
