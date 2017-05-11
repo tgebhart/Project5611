@@ -699,7 +699,7 @@
 				if (!lost) {
 					requestAnimationFrame(animate);
 				} else {
-					sounds.forEach(sound => function() {sound.onEnded = null; sound.stop(); }());
+					sounds.forEach(sound => function() {sound.onEnded = function(){}; sound.stop(); }());
 					instructions.addEventListener('mousemove', function(event) {
 
 						instructions.innerHTML = 'You Lost. Hit "Refresh" to try again.';
