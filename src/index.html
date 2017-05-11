@@ -787,7 +787,9 @@
                         il--;
                         birdsLeft--;
 						
-						bird.sound.stop();
+						if(bird.sound.isPlaying){
+							bird.sound.stop();
+						}
                         scene.remove(bird)
                     }
 				}
