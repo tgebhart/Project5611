@@ -794,7 +794,7 @@
 
 				move();
 				let look = new THREE.Vector3(target.x, 0, target.z);
-
+				var adjustedTarget = new THREE.Vector3(target.x, target.y-10, target.z);
 				for (var i = 0, il = monsters.length; i < il; i++) {
 
 						monster = monsters[i];
@@ -808,7 +808,7 @@
 							monster.setGoal(target);
 						}
 						
-					if (monster.position.distanceTo(look) < 10) {
+					if (monster.position.distanceTo(adjustedTarget) < 10) {
 						lost = true;
 					}
 					monster.setGoal(target);
