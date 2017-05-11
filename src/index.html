@@ -141,6 +141,9 @@
 		var fuel = 100;
 		var lost = false;
 
+		var numFuelPickups = 4;
+		var fuelPickups = [];
+
 		var generation = 0;
 
 		var target = new THREE.Vector3(0, 0, 0);
@@ -474,6 +477,10 @@
 
 		}
 
+		for (let i = 0; i < numFuelPickups; i++) {
+		    fuelPickups.push(placeFuel());
+		}
+
 		renderer = new THREE.WebGLRenderer();
 		renderer.setClearColor(0xffffff);
 		renderer.setPixelRatio(window.devicePixelRatio);
@@ -492,6 +499,34 @@
 
 			renderer.setSize(window.innerWidth, window.innerHeight);
 
+		}
+
+		function placeFuel() {
+            let cube = new THREE.Mesh(new THREE.CubeGeometry(10, 10, 10), new THREE.MeshNormalMaterial());
+			let point = getPoint();
+			cube.position.x = point.x;
+			cube.position.y = point.y;
+			cube.position.z = point.z;
+            scene.add(cube);
+            return cube;
+		}
+
+		function getPoint() {
+            let placement = new THREE.Vector3(
+                Math.floor(Math.random() * 20 - 10) * 50,
+                Math.floor(Math.random() * 20) * 5,
+                Math.floor(Math.random() * 20 - 10) * 50
+            );
+
+            while (!isPointValid(placement)) {
+                placement = new THREE.Vector3(
+                    Math.floor(Math.random() * 20 - 10) * 50,
+                    Math.floor(Math.random() * 20) * 5,
+                    Math.floor(Math.random() * 20 - 10) * 50
+                )
+			}
+
+			return placement;
 		}
 
 		function isPointValid(p) {
@@ -737,9 +772,6 @@
 							zombie.position.copy(monsters[i].position);
 							zombie.position.y += 1.1;
 							zombie.lookAt(look);
-							if (monster.position.distanceTo(target) < 10) {
-								lost = true;
-							}
 							monster.setGoal(target);
 						}
 
@@ -748,6 +780,20 @@
 					}
 					monster.setGoal(target);
 				}
+
+				fuelPickups.forEach(pickup =>{
+				    if (pickup.position.distanceTo(target) < 10) {
+				       fuel = 100;
+				       let pos = getPoint();
+				       pickup.position.x = pos.x;
+				       pickup.position.y = pos.y;
+				       pickup.position.z = pos.z;
+					}
+
+                    pickup.rotation.x -= 0.02;
+                    pickup.rotation.y -= 0.01;
+                    pickup.rotation.z -= 0.03;
+				});
 
 			actions.forEach(act => act.play());
 			let cdelta = clock.getDelta();
